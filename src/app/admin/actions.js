@@ -117,7 +117,6 @@ export async function updateSupervisor(formData) {
 export async function deleteSupervisor(formData) {
   const id = Number(formData.get('id'));
   const confirmDelete = String(formData.get('confirm_delete') || '') === 'yes';
-  const reassignTo = normalizeUsername(formData.get('reassign_to'));
 
   if (!id) {
     return { ok: false, message: 'Invalid supervisor selected.' };
@@ -138,44 +137,9 @@ export async function deleteSupervisor(formData) {
   );
   const assignedCount = Number(assignedCountRow?.count || 0);
   if (assignedCount > 0) {
-    if (!reassignTo) {
-      return {
-        ok: false,
-        message: `Select a supervisor to reassign ${assignedCount} assigned vehicle(s) before deletion.`,
-      };
-    }
-    if (reassignTo === supervisor.username) {
-      return {
-        ok: false,
-        message: 'Reassignment target must be a different supervisor.',
-      };
-    }
-
-    const reassignmentTarget = await db.get(
-      "SELECT id FROM Users WHERE role = 'Supervisor' AND LOWER(username) = LOWER(?)",
-      [reassignTo]
-    );
-    if (!reassignmentTarget) {
-      return { ok: false, message: 'Selected reassignment supervisor does not exist.' };
-    }
-
-    try {
-      await db.exec('BEGIN TRANSACTION');
-      await db.run('UPDATE Vehicles SET supervisor_username = ? WHERE supervisor_username = ?', [
-        reassignTo,
-        supervisor.username,
-      ]);
-      await db.run('DELETE FROM Users WHERE id = ? AND role = ?', [id, 'Supervisor']);
-      await db.exec('COMMIT');
-    } catch (error) {
-      await db.exec('ROLLBACK');
-      throw error;
-    }
-
-    revalidateAdminRelatedPaths();
     return {
-      ok: true,
-      message: `${supervisor.name} deleted and ${assignedCount} vehicle(s) reassigned to ${reassignTo}.`,
+      ok: false,
+      message: `Cannot delete ${supervisor.name}. Reassign ${assignedCount} assigned vehicle(s) in Vehicle Master first.`,
     };
   }
 

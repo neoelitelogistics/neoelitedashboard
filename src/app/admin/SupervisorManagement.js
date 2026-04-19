@@ -239,7 +239,6 @@ export default function SupervisorManagement({ supervisors }) {
           <tbody>
             {supervisors.map((supervisor) => {
               const assignedVehicles = Number(supervisor.assigned_vehicles_count || 0);
-              const reassignCandidates = supervisors.filter((item) => item.username !== supervisor.username);
 
               return (
                 <tr key={supervisor.id}>
@@ -248,7 +247,7 @@ export default function SupervisorManagement({ supervisors }) {
                   <td>{supervisor.username}</td>
                   <td>{assignedVehicles}</td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <button
                         onClick={() => setEditingSupervisor(supervisor)}
                         className="badge badge-info"
@@ -259,11 +258,14 @@ export default function SupervisorManagement({ supervisors }) {
                       <form
                         action={deleteAction}
                         onSubmit={(event) => {
-                          const confirmed = window.confirm(
-                            assignedVehicles > 0
-                              ? `Delete "${supervisor.name}" and reassign ${assignedVehicles} vehicle(s)?`
-                              : `Delete supervisor "${supervisor.name}"?`
-                          );
+                          if (assignedVehicles > 0) {
+                            event.preventDefault();
+                            window.alert(
+                              `Cannot delete ${supervisor.name}. Reassign ${assignedVehicles} assigned vehicle(s) in Vehicle Master below, then try again.`
+                            );
+                            return;
+                          }
+                          const confirmed = window.confirm(`Delete supervisor "${supervisor.name}"?`);
                           if (!confirmed) {
                             event.preventDefault();
                           }
@@ -271,27 +273,11 @@ export default function SupervisorManagement({ supervisors }) {
                       >
                         <input type="hidden" name="id" value={supervisor.id} />
                         <input type="hidden" name="confirm_delete" value="yes" />
-                        {assignedVehicles > 0 && (
-                          <select
-                            name="reassign_to"
-                            className="input-field"
-                            defaultValue={reassignCandidates[0]?.username || ''}
-                            style={{ minWidth: '150px' }}
-                            required
-                            aria-label={`Reassign vehicles from ${supervisor.name}`}
-                          >
-                            {reassignCandidates.map((candidate) => (
-                              <option key={candidate.id} value={candidate.username}>
-                                Reassign to {candidate.name}
-                              </option>
-                            ))}
-                          </select>
-                        )}
                         <button
                           type="submit"
                           className="badge badge-danger"
                           style={{ border: 'none', cursor: 'pointer' }}
-                          disabled={deletePending || (assignedVehicles > 0 && reassignCandidates.length === 0)}
+                          disabled={deletePending}
                         >
                           Delete
                         </button>
