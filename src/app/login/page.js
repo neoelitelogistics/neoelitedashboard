@@ -1,6 +1,8 @@
 import { loginAs } from './actions';
 import { getDb } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Login() {
   const db = await getDb();
   const users = await db.all('SELECT * FROM Users ORDER BY role ASC, name ASC');

@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "seed": "node init-db.js",
-    "build": "npm run seed && next build",
-    "start": "next start",
+    "build": "next build",
+    "start": "node init-db.js && next start",
     "lint": "eslint"
   },
   "dependencies": {
