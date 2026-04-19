@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AdminTable from './AdminTable';
+import SupervisorManagement from './SupervisorManagement';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,11 @@ export default async function AdminPanel() {
           </Link>
           <div className="badge badge-info">Role: Admin</div>
         </div>
+      </div>
+
+      <div className="glass-card" style={{ marginBottom: '3rem' }}>
+        <h2 style={{ marginTop: 0 }}>Supervisor Management</h2>
+        <SupervisorManagement supervisors={supervisors} />
       </div>
 
       <div className="glass-card" style={{ marginBottom: '3rem' }}>
