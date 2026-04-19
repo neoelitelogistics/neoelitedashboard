@@ -14,9 +14,9 @@ const authCookieOptions = {
   secure: process.env.NODE_ENV === 'production',
 };
 
-export async function loginAs(username, role) {
+export async function loginAs(username, role, name) {
   const cookieStore = await cookies();
-  cookieStore.set('auth_user', JSON.stringify({ username, role }), authCookieOptions);
+  cookieStore.set('auth_user', JSON.stringify({ username, role, name }), authCookieOptions);
   if (role === 'Admin') {
     redirect('/dashboard');
   } else {
@@ -42,7 +42,7 @@ export async function loginManagement(_prevState, formData) {
 
   const db = await getDb();
   const adminUser =
-    await db.get("SELECT username, role FROM Users WHERE role = 'Admin' ORDER BY id ASC LIMIT 1");
+    await db.get("SELECT username, role, name FROM Users WHERE role = 'Admin' ORDER BY id ASC LIMIT 1");
 
   if (!adminUser) {
     return {
@@ -53,7 +53,7 @@ export async function loginManagement(_prevState, formData) {
   const cookieStore = await cookies();
   cookieStore.set(
     'auth_user',
-    JSON.stringify({ username: adminUser.username, role: adminUser.role }),
+    JSON.stringify({ username: adminUser.username, role: adminUser.role, name: adminUser.name }),
     authCookieOptions
   );
 

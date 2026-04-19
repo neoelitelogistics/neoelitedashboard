@@ -34,36 +34,36 @@ export default async function AdminPanel() {
         <form action={addVehicle} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'end' }}>
           
           <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Truck ID</label>
-            <input type="text" name="truck_id" className="input-field" required />
+            <label htmlFor="admin-add-truck-id">Truck ID</label>
+            <input id="admin-add-truck-id" type="text" name="truck_id" className="input-field" required />
           </div>
 
           <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Vehicle No</label>
-            <input type="text" name="vehicle_no" className="input-field" required />
+            <label htmlFor="admin-add-vehicle-no">Vehicle No</label>
+            <input id="admin-add-vehicle-no" type="text" name="vehicle_no" className="input-field" required />
           </div>
 
           <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Vehicle Type</label>
-            <input type="text" name="vehicle_type" className="input-field" defaultValue="MXL" required />
+            <label htmlFor="admin-add-vehicle-type">Vehicle Type</label>
+            <input id="admin-add-vehicle-type" type="text" name="vehicle_type" className="input-field" defaultValue="MXL" required />
           </div>
 
           <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Mode</label>
-            <select name="mode" className="input-field" required>
+            <label htmlFor="admin-add-mode">Mode</label>
+            <select id="admin-add-mode" name="mode" className="input-field" required>
               <option value="Line">Line</option>
               <option value="Dedicated">Dedicated</option>
             </select>
           </div>
 
           <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Customer Name</label>
-            <input type="text" name="customer_name" className="input-field" />
+            <label htmlFor="admin-add-customer-name">Customer Name</label>
+            <input id="admin-add-customer-name" type="text" name="customer_name" className="input-field" />
           </div>
 
           <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Supervisor</label>
-            <select name="supervisor_username" className="input-field" required>
+            <label htmlFor="admin-add-supervisor">Supervisor</label>
+            <select id="admin-add-supervisor" name="supervisor_username" className="input-field" required>
               <option value="">Select Supervisor</option>
               {supervisors.map(s => (
                 <option key={s.id} value={s.username}>{s.name}</option>

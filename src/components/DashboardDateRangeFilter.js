@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 export default function DashboardDateRangeFilter({ initialStartDate, initialEndDate, baseUrl }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const startId = `${baseUrl.replace(/[^a-z0-9]/gi, '-')}-from-date`;
+  const endId = `${baseUrl.replace(/[^a-z0-9]/gi, '-')}-to-date`;
   const [startDate, setStartDate] = useState(initialStartDate);
   const [endDate, setEndDate] = useState(initialEndDate);
 
@@ -29,8 +31,9 @@ export default function DashboardDateRangeFilter({ initialStartDate, initialEndD
   return (
     <form onSubmit={applyRange} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
       <div className="input-group" style={{ marginBottom: 0 }}>
-        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>From</label>
+        <label htmlFor={startId} style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>From</label>
         <input
+          id={startId}
           type="date"
           className="input-field"
           value={startDate}
@@ -39,8 +42,9 @@ export default function DashboardDateRangeFilter({ initialStartDate, initialEndD
         />
       </div>
       <div className="input-group" style={{ marginBottom: 0 }}>
-        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>To</label>
+        <label htmlFor={endId} style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>To</label>
         <input
+          id={endId}
           type="date"
           className="input-field"
           value={endDate}

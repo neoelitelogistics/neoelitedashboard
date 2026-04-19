@@ -26,7 +26,7 @@ export default async function Login() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {supervisorUsers.map((user) => {
-                const loginAction = loginAs.bind(null, user.username, user.role);
+                const loginAction = loginAs.bind(null, user.username, user.role, user.name);
 
                 return (
                   <form key={user.id} action={loginAction}>

@@ -45,8 +45,9 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <label>Truck ID</label>
+            <label htmlFor="edit-truck-id">Truck ID</label>
             <input
+              id="edit-truck-id"
               type="text"
               className="input-field"
               value={truckId}
@@ -56,8 +57,9 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
           </div>
 
           <div className="input-group">
-            <label>Vehicle No</label>
+            <label htmlFor="edit-vehicle-no">Vehicle No</label>
             <input
+              id="edit-vehicle-no"
               type="text"
               className="input-field"
               value={vehicleNo}
@@ -67,8 +69,9 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
           </div>
 
           <div className="input-group">
-            <label>Vehicle Type</label>
+            <label htmlFor="edit-vehicle-type">Vehicle Type</label>
             <input
+              id="edit-vehicle-type"
               type="text"
               className="input-field"
               value={vehicleType}
@@ -78,8 +81,8 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
           </div>
 
           <div className="input-group">
-            <label>Mode</label>
-            <select className="input-field" value={mode} onChange={(e) => setMode(e.target.value)} required>
+            <label htmlFor="edit-mode">Mode</label>
+            <select id="edit-mode" className="input-field" value={mode} onChange={(e) => setMode(e.target.value)} required>
               <option value="Line">Line</option>
               <option value="Dedicated">Dedicated</option>
               <option value="Other">Other</option>
@@ -87,8 +90,9 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
           </div>
 
           <div className="input-group">
-            <label>Customer Name</label>
+            <label htmlFor="edit-customer-name">Customer Name</label>
             <input 
+              id="edit-customer-name"
               type="text" 
               className="input-field" 
               value={customer}
@@ -98,8 +102,8 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
           </div>
 
           <div className="input-group">
-            <label>Supervisor</label>
-            <select className="input-field" value={supervisor} onChange={(e) => setSupervisor(e.target.value)} required>
+            <label htmlFor="edit-supervisor">Supervisor</label>
+            <select id="edit-supervisor" className="input-field" value={supervisor} onChange={(e) => setSupervisor(e.target.value)} required>
               {supervisors.map(s => (
                 <option key={s.id} value={s.username}>{s.name}</option>
               ))}
