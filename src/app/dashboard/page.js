@@ -2,7 +2,7 @@ import { getDashboardData } from './actions';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import DateFilter from '@/components/DateFilter';
+import DashboardDateRangeFilter from '@/components/DashboardDateRangeFilter';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,9 @@ export default async function ManagementDashboard({ searchParams }) {
   const params = await searchParams;
   const filterStatus = params.status;
   const filterCustomer = params.customer;
-  const selectedDate = params.date || new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
+  const startDate = params.startDate || params.date || today;
+  const endDate = params.endDate || params.date || today;
 
   const cookieStore = await cookies();
   const authCookie = cookieStore.get('auth_user');
@@ -19,23 +21,18 @@ export default async function ManagementDashboard({ searchParams }) {
   const user = JSON.parse(authCookie.value);
   if (user.role !== 'Admin') redirect('/login');
 
-  const allVehicles = await getDashboardData(selectedDate) || [];
+  const dashboardData = await getDashboardData(startDate, endDate);
+  const allVehicles = dashboardData.vehicles || [];
+  const rangeStart = dashboardData.rangeStart;
+  const rangeEnd = dashboardData.rangeEnd;
+  const isRangeView = rangeStart !== rangeEnd;
 
   const idleLineVehicles = allVehicles.filter(
     v => v.mode === 'Line' && v.current_utilization === 'Idle'
   );
 
-  const statusCounts = allVehicles.reduce((acc, v) => {
-    const s = v.current_status || 'Not Updated';
-    acc[s] = (acc[s] || 0) + 1;
-    return acc;
-  }, {});
-
-  const customerCounts = allVehicles.reduce((acc, v) => {
-    const c = v.customer_name || 'No Customer';
-    acc[c] = (acc[c] || 0) + 1;
-    return acc;
-  }, {});
+  const statusCounts = dashboardData.statusCounts || {};
+  const customerCounts = dashboardData.customerCounts || {};
 
   const sortedStatuses = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
   const sortedCustomers = Object.entries(customerCounts).sort((a, b) => b[1] - a[1]);
@@ -51,10 +48,12 @@ export default async function ManagementDashboard({ searchParams }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ margin: 0 }}>Management Dashboard</h1>
-          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Fleet status for {selectedDate}</p>
+          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+            {isRangeView ? `Fleet history from ${rangeStart} to ${rangeEnd}` : `Fleet status for ${rangeStart}`}
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
-          <DateFilter initialDate={selectedDate} baseUrl="/dashboard" />
+          <DashboardDateRangeFilter initialStartDate={rangeStart} initialEndDate={rangeEnd} baseUrl="/dashboard" />
           <Link href="/admin" className="btn btn-primary">
             Vehicle Master Admin
           </Link>
@@ -68,18 +67,67 @@ export default async function ManagementDashboard({ searchParams }) {
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{allVehicles.length}</p>
         </Link>
         <div className="glass-card" style={{ textAlign: 'center' }}>
-          <h3 style={{ color: 'var(--text-secondary)' }}>Active Vehicles</h3>
+          <h3 style={{ color: 'var(--text-secondary)' }}>{isRangeView ? 'Vehicles Updated' : 'Active Vehicles'}</h3>
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--success)', margin: 0 }}>
-            {allVehicles.filter(v => v.current_utilization === 'Active').length}
+            {isRangeView ? dashboardData.summary.updatedVehicles : allVehicles.filter(v => v.current_utilization === 'Active').length}
           </p>
         </div>
         <div className="glass-card" style={{ textAlign: 'center' }}>
-          <h3 style={{ color: 'var(--text-secondary)' }}>Idle Line Vehicles</h3>
+          <h3 style={{ color: 'var(--text-secondary)' }}>{isRangeView ? 'Range Log Entries' : 'Idle Line Vehicles'}</h3>
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--danger)', margin: 0 }}>
-            {idleLineVehicles.length}
+            {isRangeView ? dashboardData.summary.totalLogEntries : idleLineVehicles.length}
           </p>
         </div>
       </div>
+
+      {isRangeView && (
+        <>
+          <h2 style={{ marginTop: '2rem' }}>Historical Summary</h2>
+          <div className="dashboard-grid">
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <h3 style={{ color: 'var(--text-secondary)' }}>Active Log Entries</h3>
+              <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--success)', margin: 0 }}>
+                {dashboardData.summary.activeLogEntries}
+              </p>
+            </div>
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <h3 style={{ color: 'var(--text-secondary)' }}>Idle Log Entries</h3>
+              <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--danger)', margin: 0 }}>
+                {dashboardData.summary.idleLogEntries}
+              </p>
+            </div>
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <h3 style={{ color: 'var(--text-secondary)' }}>Days with Updates</h3>
+              <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>
+                {dashboardData.dailyBreakdown.length}
+              </p>
+            </div>
+          </div>
+
+          <div className="table-container" style={{ marginBottom: '2rem' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Vehicles Updated</th>
+                  <th>Active Entries</th>
+                  <th>Idle Entries</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dashboardData.dailyBreakdown.map((day) => (
+                  <tr key={day.date}>
+                    <td>{day.date}</td>
+                    <td>{day.updatedVehicles}</td>
+                    <td>{day.activeEntries}</td>
+                    <td>{day.idleEntries}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <h2 style={{ marginTop: '3rem' }}>Fleet Status Distribution (Click to filter)</h2>
       <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '1rem' }}>
@@ -128,13 +176,16 @@ export default async function ManagementDashboard({ searchParams }) {
         ))}
       </div>
 
-      <h2 style={{ marginTop: '3rem', color: 'var(--danger)' }}>ACTION REQUIRED: Idle Line Vehicles</h2>
+      <h2 style={{ marginTop: '3rem', color: 'var(--danger)' }}>
+        {isRangeView ? 'Latest Idle Line Vehicles in Selected Range' : 'ACTION REQUIRED: Idle Line Vehicles'}
+      </h2>
       {idleLineVehicles.length > 0 ? (
         <div className="table-container" style={{ borderColor: 'var(--danger-border)' }}>
           <table>
             <thead>
               <tr>
                 <th>Vehicle No</th>
+                {isRangeView && <th>Last Updated</th>}
                 <th>Current Location</th>
                 <th>Status</th>
                 <th>Supervisor</th>
@@ -145,6 +196,7 @@ export default async function ManagementDashboard({ searchParams }) {
               {idleLineVehicles.map(v => (
                 <tr key={v.truck_id}>
                   <td style={{ fontWeight: 'bold' }}>{v.vehicle_no}</td>
+                  {isRangeView && <td>{v.last_log_date || 'Not Updated'}</td>}
                   <td>{v.current_location || 'Not Updated'}</td>
                   <td><span className="badge badge-danger">{v.current_status || 'Unknown'}</span></td>
                   <td>{v.supervisor_username.toUpperCase()}</td>
@@ -161,9 +213,11 @@ export default async function ManagementDashboard({ searchParams }) {
       )}
 
       <h2 style={{ marginTop: '3rem' }}>
-        {filterStatus || filterCustomer ? 'Filtered Vehicles' : 'Live Status Table (All Vehicles)'}
+        {filterStatus || filterCustomer
+          ? (isRangeView ? 'Filtered Historical Vehicles' : 'Filtered Vehicles')
+          : (isRangeView ? 'Historical Vehicle Status Report' : 'Live Status Table (All Vehicles)')}
         {(filterStatus || filterCustomer) && (
-          <Link href="/dashboard" style={{ fontSize: '0.875rem', marginLeft: '1rem', color: 'var(--accent-primary)', fontWeight: 'normal' }}>
+          <Link href={`/dashboard?${new URLSearchParams({ startDate: rangeStart, endDate: rangeEnd }).toString()}`} style={{ fontSize: '0.875rem', marginLeft: '1rem', color: 'var(--accent-primary)', fontWeight: 'normal' }}>
             [Clear All Filters]
           </Link>
         )}
@@ -181,9 +235,13 @@ export default async function ManagementDashboard({ searchParams }) {
               <th>Vehicle No</th>
               <th>Type / Mode</th>
               <th>Supervisor</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Utilization</th>
+              {isRangeView && <th>Last Updated</th>}
+              <th>{isRangeView ? 'Latest Location' : 'Location'}</th>
+              <th>{isRangeView ? 'Latest Status' : 'Status'}</th>
+              <th>{isRangeView ? 'Latest Utilization' : 'Utilization'}</th>
+              {isRangeView && <th>Updated Days</th>}
+              {isRangeView && <th>Active Days</th>}
+              {isRangeView && <th>Idle Days</th>}
             </tr>
           </thead>
           <tbody>
@@ -192,6 +250,7 @@ export default async function ManagementDashboard({ searchParams }) {
                 <td>{v.vehicle_no}</td>
                 <td>{v.vehicle_type} / <span className="badge">{v.mode}</span></td>
                 <td>{v.supervisor_username}</td>
+                {isRangeView && <td>{v.last_log_date || '-'}</td>}
                 <td>{v.current_location || '-'}</td>
                 <td>{v.current_status || '-'}</td>
                 <td>
@@ -199,6 +258,9 @@ export default async function ManagementDashboard({ searchParams }) {
                     {v.current_utilization || '-'}
                   </span>
                 </td>
+                {isRangeView && <td>{v.updated_days}</td>}
+                {isRangeView && <td>{v.active_days}</td>}
+                {isRangeView && <td>{v.idle_days}</td>}
               </tr>
             ))}
           </tbody>
