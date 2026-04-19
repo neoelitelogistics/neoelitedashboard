@@ -11,11 +11,13 @@ export default function RootLayout({ children }) {
       <body>
         <nav style={{ 
           padding: '1rem 2rem', 
-          borderBottom: '1px solid var(--border-color)', 
+          borderBottom: '1px solid rgba(226, 232, 240, 0.65)', 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          background: 'white',
+          background: 'rgba(255, 255, 255, 0.88)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           boxShadow: 'var(--shadow-sm)',
           position: 'sticky',
           top: 0,
