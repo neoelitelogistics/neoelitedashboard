@@ -1,4 +1,4 @@
-import { getVehicles, addVehicle, deleteVehicle } from './actions';
+import { getVehicles, addVehicle, deleteVehicle, getSupervisors } from './actions';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ export default async function AdminPanel() {
   if (user.role !== 'Admin') redirect('/login');
 
   const vehicles = await getVehicles() || [];
+  const supervisors = await getSupervisors() || [];
 
   return (
     <div>
@@ -60,8 +61,10 @@ export default async function AdminPanel() {
           <div className="input-group" style={{ marginBottom: 0 }}>
             <label>Supervisor</label>
             <select name="supervisor_username" className="input-field" required>
-              <option value="saddam">SADDAM</option>
-              <option value="rahul">RAHUL</option>
+              <option value="">Select Supervisor</option>
+              {supervisors.map(s => (
+                <option key={s.id} value={s.username}>{s.name}</option>
+              ))}
             </select>
           </div>
 

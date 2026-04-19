@@ -7,6 +7,11 @@ export async function getVehicles() {
   return await db.all('SELECT * FROM Vehicles');
 }
 
+export async function getSupervisors() {
+  const db = await getDb();
+  return await db.all("SELECT * FROM Users WHERE role = 'Supervisor' ORDER BY name ASC");
+}
+
 export async function addVehicle(formData) {
   const truck_id = formData.get('truck_id');
   const vehicle_no = formData.get('vehicle_no');

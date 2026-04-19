@@ -11,6 +11,12 @@ export default function SupervisorClient({ vehicles, user }) {
   const [location, setLocation] = useState('');
   const [status, setStatus] = useState('Idle - Waiting for load');
   const [customerName, setCustomerName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredVehicles = vehicles.filter(v => 
+    v.vehicle_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (v.customer_name && v.customer_name.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const toggleSelect = (truckId) => {
     const newSet = new Set(selectedTrucks);
@@ -48,6 +54,17 @@ export default function SupervisorClient({ vehicles, user }) {
         </div>
       </div>
 
+      <div style={{ marginBottom: '1.5rem' }}>
+        <input 
+          type="text" 
+          placeholder="Search by Vehicle No or Customer..." 
+          className="input-field"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ width: '100%' }}
+        />
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <button className="btn" style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} onClick={toggleSelectAll}>
           {selectedTrucks.size === vehicles.length ? 'Deselect All' : 'Select All'}
@@ -58,7 +75,7 @@ export default function SupervisorClient({ vehicles, user }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem', paddingBottom: '80px' }}>
-        {vehicles.map(vehicle => {
+        {filteredVehicles.map(vehicle => {
           const isSelected = selectedTrucks.has(vehicle.truck_id);
           const idleStatuses = [
             'Idle - Waiting for load', 'Breakdown', 'No Driver', 

@@ -9,12 +9,23 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <nav style={{ padding: '1.5rem 2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(10px)' }}>
-          <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+        <nav style={{ 
+          padding: '1rem 2rem', 
+          borderBottom: '1px solid var(--border-color)', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          background: 'white',
+          boxShadow: 'var(--shadow-sm)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000
+        }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 'bold', background: 'linear-gradient(135deg, #2563eb, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             NeoFleet
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <a href="/login" className="btn btn-primary" style={{ fontSize: '0.875rem', padding: '0.4rem 0.8rem' }}>Switch Role</a>
+            <a href="/login" className="btn" style={{ fontSize: '0.875rem', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>Logout / Switch</a>
           </div>
         </nav>
         <main className="container">
