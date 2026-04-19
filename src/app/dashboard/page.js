@@ -5,7 +5,10 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ManagementDashboard() {
+export default async function ManagementDashboard({ searchParams }) {
+  const params = await searchParams;
+  const filterStatus = params.status;
+
   const cookieStore = await cookies();
   const authCookie = cookieStore.get('auth_user');
   if (!authCookie) redirect('/login');
@@ -18,6 +21,18 @@ export default async function ManagementDashboard() {
   const idleLineVehicles = allVehicles.filter(
     v => v.mode === 'Line' && v.current_utilization === 'Idle'
   );
+
+  const statusCounts = allVehicles.reduce((acc, v) => {
+    const s = v.current_status || 'Not Updated';
+    acc[s] = (acc[s] || 0) + 1;
+    return acc;
+  }, {});
+
+  const sortedStatuses = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
+
+  const displayedVehicles = filterStatus 
+    ? allVehicles.filter(v => (v.current_status || 'Not Updated') === filterStatus)
+    : allVehicles;
 
   return (
     <div>
@@ -32,10 +47,10 @@ export default async function ManagementDashboard() {
       </div>
 
       <div className="dashboard-grid">
-        <div className="glass-card" style={{ textAlign: 'center' }}>
+        <Link href="/dashboard" className="glass-card" style={{ textAlign: 'center', cursor: 'pointer', border: !filterStatus ? '2px solid var(--accent-primary)' : '' }}>
           <h3 style={{ color: 'var(--text-secondary)' }}>Total Fleet</h3>
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{allVehicles.length}</p>
-        </div>
+        </Link>
         <div className="glass-card" style={{ textAlign: 'center' }}>
           <h3 style={{ color: 'var(--text-secondary)' }}>Active Vehicles</h3>
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--success)', margin: 0 }}>
@@ -48,6 +63,27 @@ export default async function ManagementDashboard() {
             {idleLineVehicles.length}
           </p>
         </div>
+      </div>
+
+      <h2 style={{ marginTop: '3rem' }}>Fleet Status Distribution (Click to filter)</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        {sortedStatuses.map(([status, count]) => (
+          <Link 
+            key={status}
+            href={`/dashboard?status=${encodeURIComponent(status)}`}
+            className="glass-card" 
+            style={{ 
+              padding: '1rem', 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              border: filterStatus === status ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+              backgroundColor: filterStatus === status ? '#eff6ff' : 'white'
+            }}
+          >
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{status}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
+          </Link>
+        ))}
       </div>
 
       <h2 style={{ marginTop: '3rem', color: 'var(--danger)' }}>ACTION REQUIRED: Idle Line Vehicles</h2>
@@ -82,7 +118,14 @@ export default async function ManagementDashboard() {
         </div>
       )}
 
-      <h2 style={{ marginTop: '3rem' }}>Live Status Table (All Vehicles)</h2>
+      <h2 style={{ marginTop: '3rem' }}>
+        {filterStatus ? `Vehicles with Status: ${filterStatus}` : 'Live Status Table (All Vehicles)'}
+        {filterStatus && (
+          <Link href="/dashboard" style={{ fontSize: '0.875rem', marginLeft: '1rem', color: 'var(--accent-primary)', fontWeight: 'normal' }}>
+            [Clear Filter]
+          </Link>
+        )}
+      </h2>
       <div className="table-container">
         <table>
           <thead>
@@ -96,7 +139,7 @@ export default async function ManagementDashboard() {
             </tr>
           </thead>
           <tbody>
-            {allVehicles.map(v => (
+            {displayedVehicles.map(v => (
               <tr key={v.truck_id}>
                 <td>{v.vehicle_no}</td>
                 <td>{v.vehicle_type} / <span className="badge">{v.mode}</span></td>
