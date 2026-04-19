@@ -1,7 +1,10 @@
-import { getVehicles, addVehicle, deleteVehicle, getSupervisors } from './actions';
+import { getVehicles, addVehicle, getSupervisors } from './actions';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import AdminTable from './AdminTable';
+
+export const dynamic = 'force-dynamic';
 
 export default async function AdminPanel() {
   const cookieStore = await cookies();
@@ -73,41 +76,7 @@ export default async function AdminPanel() {
       </div>
 
       <h2>Master Database</h2>
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Truck ID</th>
-              <th>Vehicle No</th>
-              <th>Type</th>
-              <th>Mode</th>
-              <th>Customer</th>
-              <th>Supervisor</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vehicles.map(v => (
-              <tr key={v.id}>
-                <td>{v.id}</td>
-                <td>{v.truck_id}</td>
-                <td style={{ fontWeight: 'bold' }}>{v.vehicle_no}</td>
-                <td>{v.vehicle_type}</td>
-                <td><span className="badge">{v.mode}</span></td>
-                <td>{v.customer_name}</td>
-                <td>{v.supervisor_username}</td>
-                <td>
-                  <form action={deleteVehicle}>
-                    <input type="hidden" name="id" value={v.id} />
-                    <button type="submit" className="badge badge-danger" style={{ border: 'none', cursor: 'pointer' }}>Delete</button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminTable vehicles={vehicles} supervisors={supervisors} />
     </div>
   );
 }
