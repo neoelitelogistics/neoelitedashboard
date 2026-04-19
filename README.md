@@ -25,3 +25,17 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## E2E Testing
+
+Run the Playwright release suite:
+
+```bash
+npm run test:e2e
+```
+
+Useful environment variables:
+
+- `E2E_BASE_URL` for the local test target. Defaults to `http://localhost:3000`
+- `E2E_PROD_BASE_URL` for the production smoke target. Defaults to the Railway production URL
+- `MANAGEMENT_USERNAME` and `MANAGEMENT_PASSWORD` for the management login used by the tests
