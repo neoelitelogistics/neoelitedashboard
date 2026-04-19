@@ -10,7 +10,7 @@ export default async function Login() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
       <div className="glass-card" style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
-        <h2>Login to NeoFleet</h2>
+        <h2>Neo Elite Logistics Private Limited</h2>
         <p style={{ marginBottom: '2rem' }}>Select your account to continue</p>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
