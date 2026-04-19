@@ -104,22 +104,25 @@ export default async function ManagementDashboard({ searchParams }) {
       </div>
 
       <h2 style={{ marginTop: '2rem' }}>Vehicles per Customer (Click to filter)</h2>
-      <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '2rem' }}>
+      <div className="customer-grid" style={{ marginBottom: '2rem' }}>
         {sortedCustomers.map(([customer, count]) => (
           <Link 
             key={customer}
             href={`/dashboard?${new URLSearchParams({ ...params, customer }).toString()}`}
             className="glass-card" 
             style={{ 
-              minWidth: '200px',
               padding: '1rem', 
               textAlign: 'center', 
               cursor: 'pointer',
               border: filterCustomer === customer ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-              backgroundColor: filterCustomer === customer ? '#eff6ff' : 'white'
+              backgroundColor: filterCustomer === customer ? '#eff6ff' : 'white',
+              minHeight: '110px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
             }}
           >
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{customer}</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', wordBreak: 'break-word' }}>{customer}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
           </Link>
         ))}

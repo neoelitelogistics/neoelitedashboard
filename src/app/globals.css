@@ -223,6 +223,12 @@ tbody tr:hover {
   margin-bottom: 2rem;
 }
 
+.customer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
 /* Alert Box */
 .alert-box {
   background-color: var(--danger-light);
