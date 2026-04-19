@@ -60,7 +60,12 @@ async function setup() {
       .on('data', (row) => {
         if (row.Truck_ID && row.Vehicle_No) {
           const supervisor = row.Supervisor ? row.Supervisor.trim() : 'UNASSIGNED';
-          const username = supervisor.toLowerCase().replace(/\\s+/g, '_');
+          let username = supervisor.toLowerCase().replace(/\s+/g, '_');
+          
+          // Reassign Sharath to Umesh
+          if (username === 'sharath') {
+            username = 'umesh';
+          }
           
           if (!supervisorsSet.has(username) && supervisor !== 'UNASSIGNED') {
             supervisorsSet.add(username);

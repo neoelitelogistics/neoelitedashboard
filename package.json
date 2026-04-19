@@ -6,7 +6,7 @@
     "dev": "next dev",
     "seed": "node init-db.js",
     "build": "next build",
-    "start": "node init-db.js && next start",
+    "start": "node init-db.js && node migrate-sharath.js && next start",
     "lint": "eslint"
   },
   "dependencies": {
