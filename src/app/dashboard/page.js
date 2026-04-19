@@ -80,6 +80,28 @@ export default async function ManagementDashboard({ searchParams }) {
         </div>
       </div>
 
+      <h2 style={{ marginTop: '2rem' }}>Management Decision View</h2>
+      <div className="dashboard-grid">
+        <div className="glass-card" style={{ textAlign: 'center' }}>
+          <h3 style={{ color: 'var(--text-secondary)' }}>Stale Vehicles</h3>
+          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--warning)', margin: 0 }}>
+            {dashboardData.summary.staleVehicles}
+          </p>
+        </div>
+        <div className="glass-card" style={{ textAlign: 'center' }}>
+          <h3 style={{ color: 'var(--text-secondary)' }}>Action Queue</h3>
+          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--danger)', margin: 0 }}>
+            {dashboardData.actionQueue.length}
+          </p>
+        </div>
+        <div className="glass-card" style={{ textAlign: 'center' }}>
+          <h3 style={{ color: 'var(--text-secondary)' }}>Supervisors Tracked</h3>
+          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>
+            {dashboardData.supervisorPerformance.length}
+          </p>
+        </div>
+      </div>
+
       {isRangeView && (
         <>
           <h2 style={{ marginTop: '2rem' }}>Historical Summary</h2>
@@ -128,6 +150,140 @@ export default async function ManagementDashboard({ searchParams }) {
           </div>
         </>
       )}
+
+      <h2 style={{ marginTop: '2rem' }}>Idle Aging Buckets</h2>
+      <div className="customer-grid" style={{ marginBottom: '2rem' }}>
+        {Object.entries(dashboardData.idleAgingBuckets).map(([bucket, count]) => (
+          <div key={bucket} className="glass-card" style={{ textAlign: 'center', minHeight: '110px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{bucket}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--danger)' }}>{count}</div>
+          </div>
+        ))}
+      </div>
+
+      <h2 style={{ marginTop: '2rem' }}>Supervisor Performance View</h2>
+      <div className="table-container" style={{ marginBottom: '2rem' }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Supervisor</th>
+              <th>Assigned Fleet</th>
+              <th>Vehicles Updated</th>
+              <th>Update Rate</th>
+              <th>Active Days</th>
+              <th>Idle Days</th>
+              <th>Stale Vehicles</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dashboardData.supervisorPerformance.map((entry) => (
+              <tr key={entry.supervisor}>
+                <td>{entry.supervisor.toUpperCase()}</td>
+                <td>{entry.assignedFleet}</td>
+                <td>{entry.updatedVehicles}</td>
+                <td>{entry.updateRate}%</td>
+                <td>{entry.activeDays}</td>
+                <td>{entry.idleDays}</td>
+                <td>{entry.staleVehicles}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 style={{ marginTop: '2rem' }}>Fleet Utilization Trend</h2>
+      <div className="table-container" style={{ marginBottom: '2rem' }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Active Entries</th>
+              <th>Idle Entries</th>
+              <th>Utilization Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dashboardData.fleetUtilizationTrend.map((day) => (
+              <tr key={day.date}>
+                <td>{day.date}</td>
+                <td>{day.activeEntries}</td>
+                <td>{day.idleEntries}</td>
+                <td>{day.utilizationRate}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 style={{ marginTop: '2rem', color: 'var(--danger)' }}>Action Queue</h2>
+      <div className="table-container" style={{ marginBottom: '2rem' }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Vehicle No</th>
+              <th>Supervisor</th>
+              <th>Customer</th>
+              <th>Latest Status</th>
+              <th>Idle Days</th>
+              <th>Last Updated</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dashboardData.actionQueue.map((vehicle) => (
+              <tr key={vehicle.truck_id}>
+                <td>{vehicle.vehicle_no}</td>
+                <td>{vehicle.supervisor_username.toUpperCase()}</td>
+                <td>{vehicle.customer_name || '-'}</td>
+                <td>{vehicle.current_status || 'Not Updated'}</td>
+                <td>{vehicle.idle_days}</td>
+                <td>{vehicle.last_log_date || 'Never'}</td>
+                <td>
+                  {vehicle.is_stale
+                    ? 'Stale update'
+                    : vehicle.current_utilization === 'Idle'
+                      ? 'Idle vehicle'
+                      : 'Needs review'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 style={{ marginTop: '2rem', color: 'var(--warning)' }}>Stale Data Alerts</h2>
+      <div className="table-container" style={{ marginBottom: '2rem' }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Vehicle No</th>
+              <th>Supervisor</th>
+              <th>Customer</th>
+              <th>Last Updated Date</th>
+              <th>Days Since Update</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dashboardData.staleVehicles.length > 0 ? (
+              dashboardData.staleVehicles.map((vehicle) => (
+                <tr key={vehicle.truck_id}>
+                  <td>{vehicle.vehicle_no}</td>
+                  <td>{vehicle.supervisor_username.toUpperCase()}</td>
+                  <td>{vehicle.customer_name || '-'}</td>
+                  <td>{vehicle.last_log_date || 'Never'}</td>
+                  <td>{vehicle.days_since_last_update ?? 'N/A'}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', color: 'var(--success)' }}>
+                  No stale vehicles in the selected period.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       <h2 style={{ marginTop: '3rem' }}>Fleet Status Distribution (Click to filter)</h2>
       <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '1rem' }}>
