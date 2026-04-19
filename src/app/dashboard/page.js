@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function ManagementDashboard({ searchParams }) {
   const params = await searchParams;
   const filterStatus = params.status;
+  const filterCustomer = params.customer;
 
   const cookieStore = await cookies();
   const authCookie = cookieStore.get('auth_user');
@@ -28,11 +29,20 @@ export default async function ManagementDashboard({ searchParams }) {
     return acc;
   }, {});
 
-  const sortedStatuses = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
+  const customerCounts = allVehicles.reduce((acc, v) => {
+    const c = v.customer_name || 'No Customer';
+    acc[c] = (acc[c] || 0) + 1;
+    return acc;
+  }, {});
 
-  const displayedVehicles = filterStatus 
-    ? allVehicles.filter(v => (v.current_status || 'Not Updated') === filterStatus)
-    : allVehicles;
+  const sortedStatuses = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
+  const sortedCustomers = Object.entries(customerCounts).sort((a, b) => b[1] - a[1]);
+
+  const displayedVehicles = allVehicles.filter(v => {
+    const statusMatch = !filterStatus || (v.current_status || 'Not Updated') === filterStatus;
+    const customerMatch = !filterCustomer || (v.customer_name || 'No Customer') === filterCustomer;
+    return statusMatch && customerMatch;
+  });
 
   return (
     <div>
@@ -66,13 +76,14 @@ export default async function ManagementDashboard({ searchParams }) {
       </div>
 
       <h2 style={{ marginTop: '3rem' }}>Fleet Status Distribution (Click to filter)</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '1rem' }}>
         {sortedStatuses.map(([status, count]) => (
           <Link 
             key={status}
-            href={`/dashboard?status=${encodeURIComponent(status)}`}
+            href={`/dashboard?${new URLSearchParams({ ...params, status }).toString()}`}
             className="glass-card" 
             style={{ 
+              minWidth: '180px',
               padding: '1rem', 
               textAlign: 'center', 
               cursor: 'pointer',
@@ -81,6 +92,28 @@ export default async function ManagementDashboard({ searchParams }) {
             }}
           >
             <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{status}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
+          </Link>
+        ))}
+      </div>
+
+      <h2 style={{ marginTop: '2rem' }}>Vehicles per Customer (Click to filter)</h2>
+      <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '2rem' }}>
+        {sortedCustomers.map(([customer, count]) => (
+          <Link 
+            key={customer}
+            href={`/dashboard?${new URLSearchParams({ ...params, customer }).toString()}`}
+            className="glass-card" 
+            style={{ 
+              minWidth: '200px',
+              padding: '1rem', 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              border: filterCustomer === customer ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+              backgroundColor: filterCustomer === customer ? '#eff6ff' : 'white'
+            }}
+          >
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{customer}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
           </Link>
         ))}
@@ -119,13 +152,19 @@ export default async function ManagementDashboard({ searchParams }) {
       )}
 
       <h2 style={{ marginTop: '3rem' }}>
-        {filterStatus ? `Vehicles with Status: ${filterStatus}` : 'Live Status Table (All Vehicles)'}
-        {filterStatus && (
+        {filterStatus || filterCustomer ? 'Filtered Vehicles' : 'Live Status Table (All Vehicles)'}
+        {(filterStatus || filterCustomer) && (
           <Link href="/dashboard" style={{ fontSize: '0.875rem', marginLeft: '1rem', color: 'var(--accent-primary)', fontWeight: 'normal' }}>
-            [Clear Filter]
+            [Clear All Filters]
           </Link>
         )}
       </h2>
+      {(filterStatus || filterCustomer) && (
+        <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
+          {filterStatus && <span className="badge badge-info">Status: {filterStatus}</span>}
+          {filterCustomer && <span className="badge badge-info">Customer: {filterCustomer}</span>}
+        </div>
+      )}
       <div className="table-container">
         <table>
           <thead>
