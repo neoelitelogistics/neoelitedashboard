@@ -5,7 +5,7 @@ import SupervisorClient from './SupervisorClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SupervisorDashboard() {
+export default async function SupervisorDashboard({ searchParams }) {
   const params = await searchParams;
   const selectedDate = params.date || new Date().toISOString().split('T')[0];
 
