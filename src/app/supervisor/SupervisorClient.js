@@ -47,10 +47,14 @@ export default function SupervisorClient({ vehicles, user }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Portal: {user.name}</h1>
-          <div className="badge badge-info">Assigned Fleet: {vehicles.length}</div>
+          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>Portal: {user.name}</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage your assigned vehicles below</p>
+        </div>
+        <div className="glass-card" style={{ padding: '0.75rem 1.5rem', textAlign: 'center', minWidth: '150px' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Assigned Fleet</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-primary)', lineHeight: 1 }}>{vehicles.length}</div>
         </div>
       </div>
 
