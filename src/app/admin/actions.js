@@ -37,11 +37,21 @@ export async function deleteVehicle(formData) {
   revalidatePath('/dashboard');
 }
 
-export async function updateVehicle(id, mode, customer_name, supervisor_username) {
+export async function updateVehicle(
+  id,
+  truck_id,
+  vehicle_no,
+  vehicle_type,
+  mode,
+  customer_name,
+  supervisor_username
+) {
   const db = await getDb();
   await db.run(
-    'UPDATE Vehicles SET mode = ?, customer_name = ?, supervisor_username = ? WHERE id = ?',
-    [mode, customer_name, supervisor_username, id]
+    `UPDATE Vehicles
+     SET truck_id = ?, vehicle_no = ?, vehicle_type = ?, mode = ?, customer_name = ?, supervisor_username = ?
+     WHERE id = ?`,
+    [truck_id, vehicle_no, vehicle_type, mode, customer_name, supervisor_username, id]
   );
   revalidatePath('/admin');
   revalidatePath('/dashboard');

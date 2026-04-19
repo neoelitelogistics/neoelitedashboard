@@ -1,8 +1,13 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { updateVehicle } from './actions';
 
 export default function EditModal({ vehicle, supervisors, onClose }) {
+  const router = useRouter();
+  const [truckId, setTruckId] = useState(vehicle.truck_id);
+  const [vehicleNo, setVehicleNo] = useState(vehicle.vehicle_no);
+  const [vehicleType, setVehicleType] = useState(vehicle.vehicle_type);
   const [mode, setMode] = useState(vehicle.mode);
   const [customer, setCustomer] = useState(vehicle.customer_name || '');
   const [supervisor, setSupervisor] = useState(vehicle.supervisor_username);
@@ -11,8 +16,17 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    await updateVehicle(vehicle.id, mode, customer, supervisor);
+    await updateVehicle(
+      vehicle.id,
+      truckId.trim(),
+      vehicleNo.trim(),
+      vehicleType.trim(),
+      mode,
+      customer.trim(),
+      supervisor
+    );
     setIsSaving(false);
+    router.refresh();
     onClose();
   };
 
@@ -31,10 +45,44 @@ export default function EditModal({ vehicle, supervisors, onClose }) {
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
+            <label>Truck ID</label>
+            <input
+              type="text"
+              className="input-field"
+              value={truckId}
+              onChange={(e) => setTruckId(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Vehicle No</label>
+            <input
+              type="text"
+              className="input-field"
+              value={vehicleNo}
+              onChange={(e) => setVehicleNo(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Vehicle Type</label>
+            <input
+              type="text"
+              className="input-field"
+              value={vehicleType}
+              onChange={(e) => setVehicleType(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="input-group">
             <label>Mode</label>
             <select className="input-field" value={mode} onChange={(e) => setMode(e.target.value)} required>
               <option value="Line">Line</option>
               <option value="Dedicated">Dedicated</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
