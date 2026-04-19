@@ -3,7 +3,7 @@ import { getDb } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
-export async function getAssignedVehicles() {
+export async function getAssignedVehicles(date) {
   const cookieStore = await cookies();
   const authCookie = cookieStore.get('auth_user');
   if (!authCookie) return null;
@@ -12,7 +12,7 @@ export async function getAssignedVehicles() {
   if (user.role !== 'Supervisor') return null;
 
   const db = await getDb();
-  const today = new Date().toISOString().split('T')[0];
+  const targetDate = date || new Date().toISOString().split('T')[0];
 
   const vehicles = await db.all(`
     SELECT v.*, 
@@ -21,16 +21,16 @@ export async function getAssignedVehicles() {
            (SELECT utilization FROM Daily_Logs WHERE truck_id = v.truck_id AND log_date = ?) as current_utilization
     FROM Vehicles v
     WHERE v.supervisor_username = ?
-  `, [today, today, today, user.username]);
+  `, [targetDate, targetDate, targetDate, user.username]);
 
   return vehicles;
 }
 
-export async function bulkUpdateVehicles(truckIds, customer_name, location, status) {
+export async function bulkUpdateVehicles(truckIds, customer_name, location, status, date) {
   if (!truckIds || truckIds.length === 0) return;
 
   const db = await getDb();
-  const today = new Date().toISOString().split('T')[0];
+  const targetDate = date || new Date().toISOString().split('T')[0];
   const idleStatuses = [
     'Idle - Waiting for load',
     'Breakdown',
@@ -48,7 +48,7 @@ export async function bulkUpdateVehicles(truckIds, customer_name, location, stat
       await db.run('UPDATE Vehicles SET customer_name = ? WHERE truck_id = ?', [customer_name, truck_id]);
     }
 
-    const existing = await db.get('SELECT id FROM Daily_Logs WHERE truck_id = ? AND log_date = ?', [truck_id, today]);
+    const existing = await db.get('SELECT id FROM Daily_Logs WHERE truck_id = ? AND log_date = ?', [truck_id, targetDate]);
 
     if (existing) {
       await db.run(
@@ -58,7 +58,7 @@ export async function bulkUpdateVehicles(truckIds, customer_name, location, stat
     } else {
       await db.run(
         'INSERT INTO Daily_Logs (truck_id, log_date, location, status, utilization) VALUES (?, ?, ?, ?, ?)',
-        [truck_id, today, location, status, utilization]
+        [truck_id, targetDate, location, status, utilization]
       );
     }
   }

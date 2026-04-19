@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { bulkUpdateVehicles } from './actions';
+import DateFilter from '@/components/DateFilter';
 
-export default function SupervisorClient({ vehicles, user }) {
+export default function SupervisorClient({ vehicles, user, selectedDate }) {
   const [selectedTrucks, setSelectedTrucks] = useState(new Set());
   const [isUpdating, setIsUpdating] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -39,7 +40,7 @@ export default function SupervisorClient({ vehicles, user }) {
   const handleBulkUpdate = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
-    await bulkUpdateVehicles(Array.from(selectedTrucks), customerName, location, status);
+    await bulkUpdateVehicles(Array.from(selectedTrucks), customerName, location, status, selectedDate);
     setIsUpdating(false);
     setShowModal(false);
     setSelectedTrucks(new Set()); // Reset selection after update
@@ -50,9 +51,11 @@ export default function SupervisorClient({ vehicles, user }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>Portal: {user.name}</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Manage your assigned vehicles below</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Status for {selectedDate}</p>
         </div>
-        <div className="glass-card" style={{ padding: '0.75rem 1.5rem', textAlign: 'center', minWidth: '150px' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+          <DateFilter initialDate={selectedDate} baseUrl="/supervisor" />
+          <div className="glass-card" style={{ padding: '0.75rem 1.5rem', textAlign: 'center', minWidth: '150px' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Assigned Fleet</div>
           <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-primary)', lineHeight: 1 }}>{vehicles.length}</div>
         </div>

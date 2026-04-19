@@ -2,6 +2,7 @@ import { getDashboardData } from './actions';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import DateFilter from '@/components/DateFilter';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,7 @@ export default async function ManagementDashboard({ searchParams }) {
   const params = await searchParams;
   const filterStatus = params.status;
   const filterCustomer = params.customer;
+  const selectedDate = params.date || new Date().toISOString().split('T')[0];
 
   const cookieStore = await cookies();
   const authCookie = cookieStore.get('auth_user');
@@ -17,7 +19,7 @@ export default async function ManagementDashboard({ searchParams }) {
   const user = JSON.parse(authCookie.value);
   if (user.role !== 'Admin') redirect('/login');
 
-  const allVehicles = await getDashboardData() || [];
+  const allVehicles = await getDashboardData(selectedDate) || [];
 
   const idleLineVehicles = allVehicles.filter(
     v => v.mode === 'Line' && v.current_utilization === 'Idle'
@@ -46,9 +48,13 @@ export default async function ManagementDashboard({ searchParams }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Management Dashboard</h1>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ margin: 0 }}>Management Dashboard</h1>
+          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Fleet status for {selectedDate}</p>
+        </div>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+          <DateFilter initialDate={selectedDate} baseUrl="/dashboard" />
           <Link href="/admin" className="btn btn-primary">
             Vehicle Master Admin
           </Link>
