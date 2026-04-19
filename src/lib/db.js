@@ -7,7 +7,7 @@ let db = null;
 export async function getDb() {
   if (!db) {
     db = await open({
-      filename: path.join(process.cwd(), 'fleet.db'),
+      filename: process.env.DB_PATH || path.join(process.cwd(), 'fleet.db'),
       driver: sqlite3.Database
     });
   }

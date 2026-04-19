@@ -5,10 +5,10 @@ const csv = require('csv-parser');
 const path = require('path');
 
 async function setup() {
-  const dbFile = path.join(__dirname, 'fleet.db');
+  const dbFile = process.env.DB_PATH || path.join(__dirname, 'fleet.db');
   if (fs.existsSync(dbFile)) {
-    fs.unlinkSync(dbFile);
-    console.log('Removed existing database.');
+    console.log('Database already exists. Skipping initialization to prevent data loss.');
+    return;
   }
 
   const db = await open({
