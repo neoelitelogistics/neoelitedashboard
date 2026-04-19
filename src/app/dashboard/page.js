@@ -22,17 +22,17 @@ export default async function ManagementDashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1>Management Dashboard</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link href="/admin" className="btn btn-primary" style={{ backgroundColor: '#4f46e5' }}>
+          <Link href="/admin" className="btn btn-primary">
             Vehicle Master Admin
           </Link>
-          <div className="badge badge-warning">Role: Admin</div>
+          <div className="badge badge-info">Role: Admin</div>
         </div>
       </div>
 
       <div className="dashboard-grid">
         <div className="glass-card" style={{ textAlign: 'center' }}>
           <h3 style={{ color: 'var(--text-secondary)' }}>Total Fleet</h3>
-          <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'white', margin: 0 }}>{allVehicles.length}</p>
+          <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{allVehicles.length}</p>
         </div>
         <div className="glass-card" style={{ textAlign: 'center' }}>
           <h3 style={{ color: 'var(--text-secondary)' }}>Active Vehicles</h3>

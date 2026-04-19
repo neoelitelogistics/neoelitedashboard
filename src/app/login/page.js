@@ -26,9 +26,9 @@ export default async function Login() {
                   style={{ 
                     width: '100%', 
                     padding: '1rem',
-                    backgroundColor: user.role === 'Admin' ? '' : 'rgba(255,255,255,0.1)',
-                    color: 'white',
-                    border: 'none',
+                    backgroundColor: user.role === 'Admin' ? '' : 'var(--bg-input)',
+                    color: user.role === 'Admin' ? 'white' : 'var(--text-primary)',
+                    border: user.role === 'Admin' ? 'none' : '1px solid var(--border-color)',
                     cursor: 'pointer',
                     borderRadius: '0.5rem'
                   }}

@@ -49,7 +49,7 @@ export default function SupervisorClient({ vehicles, user }) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <button className="btn" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'white' }} onClick={toggleSelectAll}>
+        <button className="btn" style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} onClick={toggleSelectAll}>
           {selectedTrucks.size === vehicles.length ? 'Deselect All' : 'Select All'}
         </button>
         <span style={{ color: 'var(--text-secondary)', alignSelf: 'center' }}>
@@ -75,12 +75,12 @@ export default function SupervisorClient({ vehicles, user }) {
               onClick={() => toggleSelect(vehicle.truck_id)}
               style={{ 
                 cursor: 'pointer', 
-                border: isSelected ? '2px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.1)',
+                border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
                 padding: '1rem',
-                backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.1)' : 'rgba(30, 41, 59, 0.7)'
+                backgroundColor: isSelected ? '#eff6ff' : 'white'
               }}
             >
-              <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '0.25rem', fontSize: '1.1rem' }}>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '0.25rem', fontSize: '1.1rem' }}>
                 {vehicle.vehicle_no}
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
@@ -131,7 +131,7 @@ export default function SupervisorClient({ vehicles, user }) {
       {showModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000,
+          backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1000,
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
         }}>
           <div className="glass-card" style={{ 

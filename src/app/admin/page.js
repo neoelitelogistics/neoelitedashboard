@@ -18,10 +18,10 @@ export default async function AdminPanel() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1>Vehicle Master Admin</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link href="/dashboard" className="btn btn-primary" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+          <Link href="/dashboard" className="btn" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>
             Back to Dashboard
           </Link>
-          <div className="badge badge-warning">Role: Admin</div>
+          <div className="badge badge-info">Role: Admin</div>
         </div>
       </div>
 
