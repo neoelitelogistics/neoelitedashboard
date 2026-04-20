@@ -40,14 +40,7 @@ html {
 body {
   min-height: 100vh;
   color: var(--text-primary);
-  background-color: #0f172a;
-  background-image:
-    linear-gradient(rgb(15 23 42 / 0.74), rgb(15 23 42 / 0.82)),
-    url('/nel-truck-background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-color: #ffffff;
 }
 
 a {
