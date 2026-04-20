@@ -251,18 +251,19 @@ test('management dashboards show historical analytics and alerts', async ({ page
   await expect(page.getByRole('heading', { name: 'Supervisor Performance View' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Fleet Utilization Trend' })).toBeVisible();
   await expect(page.locator('h2').filter({ hasText: 'Action Queue' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Stale Data Alerts' })).toBeVisible();
-
-  await expect(page.locator('table').filter({ hasText: 'E2E-STALE-001' }).first()).toBeVisible();
-  await expect(page.locator('table').filter({ hasText: 'SADDAM' }).first()).toBeVisible();
-
-  const clearLink = page.getByRole('link', { name: /\[Clear All Filters\]/ });
-  if (await clearLink.count()) {
-    await clearLink.first().click();
-  }
+  await expect(page.getByRole('heading', { name: 'Stale Data Alerts' })).toHaveCount(0);
 
   await page.goto(`${localBaseUrl}/dashboard?date=${today}`);
   await expect(page.getByText('ACTION REQUIRED: Idle Line Vehicles')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Active Vehicles' }).click();
+  await expect(page.getByRole('heading', { name: 'Active Vehicles' })).toBeVisible();
+  await expect(page.getByText('Metric: Active')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Idle Line Vehicles' }).click();
+  await expect(page.getByText('Metric: Idle Line')).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Vehicle No' }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Live Status Table (All Vehicles)' })).toHaveCount(0);
 });
 
 test('production smoke: login and main views load without server errors', async ({ page }) => {

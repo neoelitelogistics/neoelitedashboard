@@ -10,6 +10,7 @@ export default async function ManagementDashboard({ searchParams }) {
   const params = await searchParams;
   const filterStatus = params.status;
   const filterCustomer = params.customer;
+  const metric = params.metric || 'total';
   const today = new Date().toISOString().split('T')[0];
   const startDate = params.startDate || params.date || today;
   const endDate = params.endDate || params.date || today;
@@ -36,6 +37,16 @@ export default async function ManagementDashboard({ searchParams }) {
 
   const sortedStatuses = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
   const sortedCustomers = Object.entries(customerCounts).sort((a, b) => b[1] - a[1]);
+  const metricVehicles = allVehicles.filter((v) => {
+    if (metric === 'active') return v.current_utilization === 'Active';
+    if (metric === 'idle-line') return v.mode === 'Line' && v.current_utilization === 'Idle';
+    return true;
+  });
+  const displayedVehicles = metricVehicles.filter((v) => {
+    const statusMatch = !filterStatus || (v.current_status || 'Not Updated') === filterStatus;
+    const customerMatch = !filterCustomer || (v.customer_name || 'No Customer') === filterCustomer;
+    return statusMatch && customerMatch;
+  });
 
   return (
     <div>
@@ -56,22 +67,34 @@ export default async function ManagementDashboard({ searchParams }) {
       </div>
 
       <div className="dashboard-grid">
-        <Link href="/dashboard" className="glass-card" style={{ textAlign: 'center', cursor: 'pointer', border: !filterStatus ? '2px solid var(--accent-primary)' : '' }}>
+        <Link
+          href={`/dashboard?${new URLSearchParams({ ...params, metric: 'total' }).toString()}`}
+          className="glass-card"
+          style={{ textAlign: 'center', cursor: 'pointer', border: metric === 'total' ? '2px solid var(--accent-primary)' : '' }}
+        >
           <h3 style={{ color: 'var(--text-secondary)' }}>Total Fleet</h3>
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{allVehicles.length}</p>
         </Link>
-        <div className="glass-card" style={{ textAlign: 'center' }}>
+        <Link
+          href={`/dashboard?${new URLSearchParams({ ...params, metric: 'active' }).toString()}`}
+          className="glass-card"
+          style={{ textAlign: 'center', cursor: 'pointer', border: metric === 'active' ? '2px solid var(--accent-primary)' : '' }}
+        >
           <h3 style={{ color: 'var(--text-secondary)' }}>{isRangeView ? 'Vehicles Updated' : 'Active Vehicles'}</h3>
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--success)', margin: 0 }}>
             {isRangeView ? dashboardData.summary.updatedVehicles : allVehicles.filter(v => v.current_utilization === 'Active').length}
           </p>
-        </div>
-        <div className="glass-card" style={{ textAlign: 'center' }}>
+        </Link>
+        <Link
+          href={`/dashboard?${new URLSearchParams({ ...params, metric: 'idle-line' }).toString()}`}
+          className="glass-card"
+          style={{ textAlign: 'center', cursor: 'pointer', border: metric === 'idle-line' ? '2px solid var(--accent-primary)' : '' }}
+        >
           <h3 style={{ color: 'var(--text-secondary)' }}>{isRangeView ? 'Range Log Entries' : 'Idle Line Vehicles'}</h3>
           <p style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--danger)', margin: 0 }}>
             {isRangeView ? dashboardData.summary.totalLogEntries : idleLineVehicles.length}
           </p>
-        </div>
+        </Link>
       </div>
 
       <h2 style={{ marginTop: '2rem' }}>Management Decision View</h2>
@@ -144,6 +167,53 @@ export default async function ManagementDashboard({ searchParams }) {
           </div>
         </>
       )}
+
+      <h2 style={{ marginTop: '3rem' }}>Fleet Status Distribution (Click to filter)</h2>
+      <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '1rem' }}>
+        {sortedStatuses.map(([status, count]) => (
+          <Link 
+            key={status}
+            href={`/dashboard?${new URLSearchParams({ ...params, status }).toString()}`}
+            className="glass-card" 
+            style={{ 
+              minWidth: '180px',
+              padding: '1rem', 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              border: filterStatus === status ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+              backgroundColor: filterStatus === status ? '#eff6ff' : 'white'
+            }}
+          >
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{status}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
+          </Link>
+        ))}
+      </div>
+
+      <h2 style={{ marginTop: '2rem' }}>Vehicles per Customer (Click to filter)</h2>
+      <div className="customer-grid" style={{ marginBottom: '2rem' }}>
+        {sortedCustomers.map(([customer, count]) => (
+          <Link 
+            key={customer}
+            href={`/dashboard?${new URLSearchParams({ ...params, customer }).toString()}`}
+            className="glass-card" 
+            style={{ 
+              padding: '1rem', 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              border: filterCustomer === customer ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+              backgroundColor: filterCustomer === customer ? '#eff6ff' : 'white',
+              minHeight: '110px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}
+          >
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', wordBreak: 'break-word' }}>{customer}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
+          </Link>
+        ))}
+      </div>
 
       <h2 style={{ marginTop: '2rem' }}>Idle Aging Buckets</h2>
       <div className="customer-grid" style={{ marginBottom: '2rem' }}>
@@ -245,87 +315,6 @@ export default async function ManagementDashboard({ searchParams }) {
         </table>
       </div>
 
-      <h2 style={{ marginTop: '2rem', color: 'var(--warning)' }}>Stale Data Alerts</h2>
-      <div className="table-container" style={{ marginBottom: '2rem' }}>
-        <table>
-          <thead>
-            <tr>
-              <th>Vehicle No</th>
-              <th>Supervisor</th>
-              <th>Customer</th>
-              <th>Last Updated Date</th>
-              <th>Days Since Update</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dashboardData.staleVehicles.length > 0 ? (
-              dashboardData.staleVehicles.map((vehicle) => (
-                <tr key={vehicle.truck_id}>
-                  <td>{vehicle.vehicle_no}</td>
-                  <td>{vehicle.supervisor_username.toUpperCase()}</td>
-                  <td>{vehicle.customer_name || '-'}</td>
-                  <td>{vehicle.last_log_date || 'Never'}</td>
-                  <td>{vehicle.days_since_last_update ?? 'N/A'}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" style={{ textAlign: 'center', color: 'var(--success)' }}>
-                  No stale vehicles in the selected period.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <h2 style={{ marginTop: '3rem' }}>Fleet Status Distribution (Click to filter)</h2>
-      <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '1rem' }}>
-        {sortedStatuses.map(([status, count]) => (
-          <Link 
-            key={status}
-            href={`/dashboard?${new URLSearchParams({ ...params, status }).toString()}`}
-            className="glass-card" 
-            style={{ 
-              minWidth: '180px',
-              padding: '1rem', 
-              textAlign: 'center', 
-              cursor: 'pointer',
-              border: filterStatus === status ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-              backgroundColor: filterStatus === status ? '#eff6ff' : 'white'
-            }}
-          >
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{status}</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
-          </Link>
-        ))}
-      </div>
-
-      <h2 style={{ marginTop: '2rem' }}>Vehicles per Customer (Click to filter)</h2>
-      <div className="customer-grid" style={{ marginBottom: '2rem' }}>
-        {sortedCustomers.map(([customer, count]) => (
-          <Link 
-            key={customer}
-            href={`/dashboard?${new URLSearchParams({ ...params, customer }).toString()}`}
-            className="glass-card" 
-            style={{ 
-              padding: '1rem', 
-              textAlign: 'center', 
-              cursor: 'pointer',
-              border: filterCustomer === customer ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-              backgroundColor: filterCustomer === customer ? '#eff6ff' : 'white',
-              minHeight: '110px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center'
-            }}
-          >
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', wordBreak: 'break-word' }}>{customer}</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{count}</div>
-          </Link>
-        ))}
-      </div>
-
       <h2 style={{ marginTop: '3rem', color: 'var(--danger)' }}>
         {isRangeView ? 'Latest Idle Line Vehicles in Selected Range' : 'ACTION REQUIRED: Idle Line Vehicles'}
       </h2>
@@ -361,6 +350,75 @@ export default async function ManagementDashboard({ searchParams }) {
           <p style={{ margin: 0, color: 'var(--success)', textAlign: 'center' }}>Great! All line vehicles are currently active.</p>
         </div>
       )}
+
+      <h2 style={{ marginTop: '3rem' }}>
+        {metric === 'active'
+          ? 'Active Vehicles'
+          : metric === 'idle-line'
+            ? 'Idle Line Vehicles'
+            : 'Total Fleet Records'}
+        {(filterStatus || filterCustomer || metric !== 'total') && (
+          <Link
+            href={`/dashboard?${new URLSearchParams({ startDate: rangeStart, endDate: rangeEnd }).toString()}`}
+            style={{ fontSize: '0.875rem', marginLeft: '1rem', color: 'var(--accent-primary)', fontWeight: 'normal' }}
+          >
+            [Clear Selection]
+          </Link>
+        )}
+      </h2>
+      {(filterStatus || filterCustomer || metric !== 'total') && (
+        <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
+          <span className="badge badge-info">Metric: {metric === 'idle-line' ? 'Idle Line' : metric === 'active' ? 'Active' : 'Total'}</span>
+          {filterStatus && <span className="badge badge-info">Status: {filterStatus}</span>}
+          {filterCustomer && <span className="badge badge-info">Customer: {filterCustomer}</span>}
+        </div>
+      )}
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Vehicle No</th>
+              <th>Type / Mode</th>
+              <th>Supervisor</th>
+              {isRangeView && <th>Last Updated</th>}
+              <th>{isRangeView ? 'Latest Location' : 'Location'}</th>
+              <th>{isRangeView ? 'Latest Status' : 'Status'}</th>
+              <th>{isRangeView ? 'Latest Utilization' : 'Utilization'}</th>
+              {isRangeView && <th>Updated Days</th>}
+              {isRangeView && <th>Active Days</th>}
+              {isRangeView && <th>Idle Days</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {displayedVehicles.length > 0 ? (
+              displayedVehicles.map(v => (
+                <tr key={v.truck_id}>
+                  <td>{v.vehicle_no}</td>
+                  <td>{v.vehicle_type} / <span className="badge">{v.mode}</span></td>
+                  <td>{v.supervisor_username}</td>
+                  {isRangeView && <td>{v.last_log_date || '-'}</td>}
+                  <td>{v.current_location || '-'}</td>
+                  <td>{v.current_status || '-'}</td>
+                  <td>
+                    <span className={`badge ${v.current_utilization === 'Active' ? 'badge-success' : 'badge-danger'}`}>
+                      {v.current_utilization || '-'}
+                    </span>
+                  </td>
+                  {isRangeView && <td>{v.updated_days}</td>}
+                  {isRangeView && <td>{v.active_days}</td>}
+                  {isRangeView && <td>{v.idle_days}</td>}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={isRangeView ? 10 : 6} style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  No vehicles found for the selected criteria.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
     </div>
   );
