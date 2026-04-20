@@ -37,12 +37,6 @@ export default async function ManagementDashboard({ searchParams }) {
   const sortedStatuses = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
   const sortedCustomers = Object.entries(customerCounts).sort((a, b) => b[1] - a[1]);
 
-  const displayedVehicles = allVehicles.filter(v => {
-    const statusMatch = !filterStatus || (v.current_status || 'Not Updated') === filterStatus;
-    const customerMatch = !filterCustomer || (v.customer_name || 'No Customer') === filterCustomer;
-    return statusMatch && customerMatch;
-  });
-
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -368,60 +362,6 @@ export default async function ManagementDashboard({ searchParams }) {
         </div>
       )}
 
-      <h2 style={{ marginTop: '3rem' }}>
-        {filterStatus || filterCustomer
-          ? (isRangeView ? 'Filtered Historical Vehicles' : 'Filtered Vehicles')
-          : (isRangeView ? 'Historical Vehicle Status Report' : 'Live Status Table (All Vehicles)')}
-        {(filterStatus || filterCustomer) && (
-          <Link href={`/dashboard?${new URLSearchParams({ startDate: rangeStart, endDate: rangeEnd }).toString()}`} style={{ fontSize: '0.875rem', marginLeft: '1rem', color: 'var(--accent-primary)', fontWeight: 'normal' }}>
-            [Clear All Filters]
-          </Link>
-        )}
-      </h2>
-      {(filterStatus || filterCustomer) && (
-        <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
-          {filterStatus && <span className="badge badge-info">Status: {filterStatus}</span>}
-          {filterCustomer && <span className="badge badge-info">Customer: {filterCustomer}</span>}
-        </div>
-      )}
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Vehicle No</th>
-              <th>Type / Mode</th>
-              <th>Supervisor</th>
-              {isRangeView && <th>Last Updated</th>}
-              <th>{isRangeView ? 'Latest Location' : 'Location'}</th>
-              <th>{isRangeView ? 'Latest Status' : 'Status'}</th>
-              <th>{isRangeView ? 'Latest Utilization' : 'Utilization'}</th>
-              {isRangeView && <th>Updated Days</th>}
-              {isRangeView && <th>Active Days</th>}
-              {isRangeView && <th>Idle Days</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {displayedVehicles.map(v => (
-              <tr key={v.truck_id}>
-                <td>{v.vehicle_no}</td>
-                <td>{v.vehicle_type} / <span className="badge">{v.mode}</span></td>
-                <td>{v.supervisor_username}</td>
-                {isRangeView && <td>{v.last_log_date || '-'}</td>}
-                <td>{v.current_location || '-'}</td>
-                <td>{v.current_status || '-'}</td>
-                <td>
-                  <span className={`badge ${v.current_utilization === 'Active' ? 'badge-success' : 'badge-danger'}`}>
-                    {v.current_utilization || '-'}
-                  </span>
-                </td>
-                {isRangeView && <td>{v.updated_days}</td>}
-                {isRangeView && <td>{v.active_days}</td>}
-                {isRangeView && <td>{v.idle_days}</td>}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
